@@ -1,0 +1,3 @@
+https://obsns2.sa-argentina.telefonicaopencloud.com
+backup.obs-website.sa-argentina-1.telefonicaopencloud.com
+xksproxy.aws.dev.multicloud.telefonica.com

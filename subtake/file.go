@@ -59,8 +59,9 @@ func write(result, output string) {
 	}
 }
 
-func writeJSON(service, url, output string) {
+func writeJSON(service string, url string) []byte {
 	var r Results
+
 	if strings.Contains(service, "DOMAIN") {
 		r = Results{
 			Subdomain:  strings.ToLower(url),
@@ -83,30 +84,23 @@ func writeJSON(service, url, output string) {
 		}
 	}
 
-	f, err := os.OpenFile(output, os.O_CREATE|os.O_RDWR, 0600)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	/*
+		f, err := os.OpenFile(output, os.O_CREATE|os.O_RDWR, 0600)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-	defer f.Close()
+		defer f.Close()
 
-	file, err := ioutil.ReadAll(f)
-	if err != nil {
-		log.Fatalln(err)
-	}
+		file, err := ioutil.ReadAll(f)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-	var data []Results
-	json.Unmarshal(file, &data)
-	data = append(data, r)
+	*/
+	result, _ := json.Marshal(r)
 
-	results, _ := json.Marshal(data)
-
-	wf, err := os.OpenFile(output, os.O_CREATE|os.O_RDWR, 0600)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	wf.Write(results)
+	return result
 }
 
 func fingerprints(file string) (data []Fingerprints) {

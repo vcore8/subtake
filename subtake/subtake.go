@@ -1,19 +1,20 @@
 package subtake
 
 import (
+	"fmt"
 	"log"
 	"sync"
 )
 
 type Options struct {
-	Domains  string
-	Threads  int
-	Timeout  int
-	Output   string
-	Ssl      bool
-	All      bool
-	Verbose  bool
-	Config   string
+	Domains string
+	Threads int
+	Timeout int
+	Output  string
+	Ssl     bool
+	All     bool
+	Verbose bool
+	Config  string
 }
 
 type Subdomain struct {
@@ -22,7 +23,10 @@ type Subdomain struct {
 
 /* Start processing from the defined options. */
 func Process(o *Options) {
-	urls := make(chan *Subdomain, o.Threads*10)
+	urls := make(chan *Subdomain, o.Threads*2)
+	resultsChan := make(chan Results, o.Threads*2) // Results channel
+	fmt.Println("Starting process for: ")
+
 	list, err := open(o.Domains)
 	if err != nil {
 		log.Fatalln(err)
@@ -31,20 +35,30 @@ func Process(o *Options) {
 	wg := new(sync.WaitGroup)
 
 	for i := 0; i < o.Threads; i++ {
+		fmt.Println("Starting threads")
 		wg.Add(1)
 		go func() {
 			for url := range urls {
-				url.dns(o)
-			}
+				fmt.Printf("+ %s\n", url)
 
+				result := url.dns(url) // Get the result
+				resultsChan <- result  // Send result to channel
+			}
 			wg.Done()
 		}()
 	}
 
-	for i := 0; i < len(list); i++ {
-		urls <- &Subdomain{Url: list[i]}
+	for _, domain := range list {
+		urls <- &Subdomain{Url: domain}
 	}
 
 	close(urls)
 	wg.Wait()
+	close(resultsChan) // Close results channel after all goroutines are done
+
+	// Process results
+	for result := range resultsChan {
+		// Handle each result
+		logVerboseNonVulnerable(result)
+	}
 }

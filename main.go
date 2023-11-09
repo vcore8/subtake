@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jakejarvis/subtake/subtake"
+	"github.com/vcore8/subtake/subtake"
 )
 
 func main() {
